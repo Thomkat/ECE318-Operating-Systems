@@ -1,0 +1,593 @@
+diff -ruN linux-5.4.86-orig/arch/x86/entry/syscalls/syscall_64.tbl linux-5.4.86-dev/arch/x86/entry/syscalls/syscall_64.tbl
+--- linux-5.4.86-orig/arch/x86/entry/syscalls/syscall_64.tbl	2020-12-30 10:51:48.000000000 +0000
++++ linux-5.4.86-dev/arch/x86/entry/syscalls/syscall_64.tbl	2023-04-30 21:26:03.783450279 +0000
+@@ -357,6 +357,10 @@
+ 433	common	fspick			__x64_sys_fspick
+ 434	common	pidfd_open		__x64_sys_pidfd_open
+ 435	common	clone3			__x64_sys_clone3/ptregs
++436	common  slob_get_total_alloc_mem __x64_sys_slob_get_total_alloc_mem
++437	common  slob_get_total_free_mem  __x64_sys_slob_get_total_free_mem
++438	common  slob_alloc_mem		__x64_sys_slob_alloc_mem
++439	common	slob_free_mem		__x64_sys_slob_free_mem
+ 
+ #
+ # x32-specific system call numbers start at 512 to avoid cache impact
+diff -ruN linux-5.4.86-orig/certs/signing_key.pem linux-5.4.86-dev/certs/signing_key.pem
+--- linux-5.4.86-orig/certs/signing_key.pem	1970-01-01 00:00:00.000000000 +0000
++++ linux-5.4.86-dev/certs/signing_key.pem	2023-04-26 09:05:58.827481619 +0000
+@@ -0,0 +1,83 @@
++-----BEGIN PRIVATE KEY-----
++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
++EVrB/+NN0Vn0r4X10T4y+NnvKPAblJc=
++-----END PRIVATE KEY-----
++-----BEGIN CERTIFICATE-----
++MIIFSTCCAzGgAwIBAgIUb9KCzYYJflRqpYagT5ckCycXWkswDQYJKoZIhvcNAQEN
++BQAwLjEsMCoGA1UEAwwjQnVpbGQgdGltZSBhdXRvZ2VuZXJhdGVkIGtlcm5lbCBr
++ZXkwIBcNMjMwNDI2MDkwNTU4WhgPMjEyMzA0MDIwOTA1NThaMC4xLDAqBgNVBAMM
++I0J1aWxkIHRpbWUgYXV0b2dlbmVyYXRlZCBrZXJuZWwga2V5MIICIjANBgkqhkiG
++9w0BAQEFAAOCAg8AMIICCgKCAgEAwAQluE7GSESmszsz02At6hgt6ojQhhDPWNnZ
++5zzNo7+j1oOleA+Mga0vrKK/KVJx5G9GjIOk4Xe2kPErXZK7k5aXeOeESZqsXz7U
++UT90RTO2V4PzggCewubDdwHlky2dX+GlaQ2CP1vaMYDmdhWlZx2QqMnBZKNfDuQL
++tiKceVmf428FcWw2cN6889Hkbbh3mj+fBmD0hk99WiD2J4luLjNmkVZkAwDESMvm
+++I9cPNcpi7Ts7hJ6RDQtPmTY3kSNaB5z4uyo9C/DFtl+YwhODPZsXCjlTYmK/xMo
++q9iWXRxcqed8HSJ5Y2J28NaVyeaJCb8Y5tEhHK2GYKxAIA0Bw8w58VM4/noycRmS
+++5Xtnc1J0+fHjZG1rNnyXvTgogcquKX0/3/JvhdezFKNFFl8rzQiRXJM3M+RLQI3
++lvXohreuBE/Dmy70NF0lgn7QArgoU6QYakLChOAfRXI7ueCiXTRxp2ZLCvBcWAS/
++GRb6UCLYn9aTUpoSXzX6O9e53JO4SRQU0rx+2mMORhok6T5pvYMmgg7YV23MGNYy
++D11VNHd/9ltm7ElTm/2fkgu+bFUd5XXJw5EhXftzP4LjWXRpqexvoQ3olayXS/rn
++7r5L0sJmS8rhmU/VY6r2vnvDGgSAL+uzOaVIwBQNCK21E2x90Sz+NOZjmn//YaV1
++Jl2br9ECAwEAAaNdMFswDAYDVR0TAQH/BAIwADALBgNVHQ8EBAMCB4AwHQYDVR0O
++BBYEFNm6KUm4ZLD4DZi96YM30T0gqnbFMB8GA1UdIwQYMBaAFNm6KUm4ZLD4DZi9
++6YM30T0gqnbFMA0GCSqGSIb3DQEBDQUAA4ICAQAwfg46sVkD4CCKilpnPlwqoKh5
++yuoIaW7ijE53caQZbasT+KHzL2dTFDNxRfOQO7e1V2zK2qO9jPZOIttPENuf42vd
++OdGdzuNz7ihk1pWheFOlX5V7q3ksdUVqF59mhCvdV7aa+/7dDfuhajV0JKoJm9iR
++o36IJYZNAFPQq0KLp+gXS5zpopcH9o4ME1fiS7vLn2odgHre0a6oKoPNN/6VDGIg
++9sPpb7wCjbNHSER59lVa2UuwPGeczQJCCHpRV03GOTOirmHrqIVUGu6WFDIj6JnE
++s3dcBR86RApCsHtofT0p7bZ983W6dql6DGpXX2fb/HYnIMvBhay1sFYV2S9WtqLk
++g5bODgciU3Zjhl4L/bw6xI4QRiGkZ6OGmbB8atBtiVf9aWWTqiRrv7LU8xKMN5eD
++PURPrXilnnJde9hZRFlu0/+rhC8T/E6WrGuS9KDWvVo5DnivNwoAh7vgBXBP48D3
++2eBkHEYiJsxOw5gAnGz5eiQgbOxx2XYdUqR78SeYmnXNUZgzX10akIM3YUhBJ9yu
++hEySWyn2FEQFCv5CNy8v++61w9NaY9wONRuXEMg2hsWeXxSI9GJqGN7fTFb9jGY3
++yKS7f20OR2FuGDc9cq078tfsJ12Kth0Q1Zc/67ecQR3apIgpmqbfa6LVEH+9lMKd
++cjoB6qo7YnE3FQeXPA==
++-----END CERTIFICATE-----
+Binary files linux-5.4.86-orig/certs/signing_key.x509 and linux-5.4.86-dev/certs/signing_key.x509 differ
+diff -ruN linux-5.4.86-orig/certs/x509.genkey linux-5.4.86-dev/certs/x509.genkey
+--- linux-5.4.86-orig/certs/x509.genkey	1970-01-01 00:00:00.000000000 +0000
++++ linux-5.4.86-dev/certs/x509.genkey	2023-04-26 09:05:57.855498874 +0000
+@@ -0,0 +1,17 @@
++[ req ]
++default_bits = 4096
++distinguished_name = req_distinguished_name
++prompt = no
++string_mask = utf8only
++x509_extensions = myexts
++
++[ req_distinguished_name ]
++#O = Unspecified company
++CN = Build time autogenerated kernel key
++#emailAddress = unspecified.user@unspecified.company
++
++[ myexts ]
++basicConstraints=critical,CA:FALSE
++keyUsage=digitalSignature
++subjectKeyIdentifier=hash
++authorityKeyIdentifier=keyid
+diff -ruN linux-5.4.86-orig/include/linux/slob.h linux-5.4.86-dev/include/linux/slob.h
+--- linux-5.4.86-orig/include/linux/slob.h	1970-01-01 00:00:00.000000000 +0000
++++ linux-5.4.86-dev/include/linux/slob.h	2023-04-30 18:13:15.931412302 +0000
+@@ -0,0 +1,2 @@
++long int returnAllocatedSpace(void);
++long int returnFreeSpace(void);
+\ No newline at end of file
+diff -ruN linux-5.4.86-orig/include/linux/syscalls.h linux-5.4.86-dev/include/linux/syscalls.h
+--- linux-5.4.86-orig/include/linux/syscalls.h	2020-12-30 10:51:48.000000000 +0000
++++ linux-5.4.86-dev/include/linux/syscalls.h	2023-04-30 23:00:22.091300449 +0000
+@@ -1422,3 +1422,7 @@
+ 			    const struct old_timespec32 __user *timeout);
+ 
+ #endif
++asmlinkage long sys_slob_get_total_alloc_mem(void);
++asmlinkage long sys_slob_get_total_free_mem(void);
++asmlinkage long sys_slob_alloc_mem(size_t size);
++asmlinkage long sys_slob_free_mem(const void *p);
+diff -ruN linux-5.4.86-orig/kernel/Makefile linux-5.4.86-dev/kernel/Makefile
+--- linux-5.4.86-orig/kernel/Makefile	2020-12-30 10:51:48.000000000 +0000
++++ linux-5.4.86-dev/kernel/Makefile	2023-04-30 21:12:50.276795001 +0000
+@@ -10,7 +10,9 @@
+ 	    extable.o params.o \
+ 	    kthread.o sys_ni.o nsproxy.o \
+ 	    notifier.o ksysfs.o cred.o reboot.o \
+-	    async.o range.o smpboot.o ucount.o
++	    async.o range.o smpboot.o ucount.o slob_get_total_alloc_mem_syscall.o \
++	    slob_get_total_free_mem_syscall.o slob_alloc_mem_syscall.o \
++	    slob_free_mem_syscall.o
+ 
+ obj-$(CONFIG_MODULES) += kmod.o
+ obj-$(CONFIG_MULTIUSER) += groups.o
+diff -ruN linux-5.4.86-orig/kernel/slob_alloc_mem_syscall.c linux-5.4.86-dev/kernel/slob_alloc_mem_syscall.c
+--- linux-5.4.86-orig/kernel/slob_alloc_mem_syscall.c	1970-01-01 00:00:00.000000000 +0000
++++ linux-5.4.86-dev/kernel/slob_alloc_mem_syscall.c	2023-04-30 22:59:31.174661941 +0000
+@@ -0,0 +1,6 @@
++#include <linux/kernel.h>
++#include <linux/syscalls.h>
++
++SYSCALL_DEFINE1(slob_alloc_mem, size_t, size) {
++    return((long int)kmalloc(size, GFP_KERNEL));
++}
+\ No newline at end of file
+diff -ruN linux-5.4.86-orig/kernel/slob_free_mem_syscall.c linux-5.4.86-dev/kernel/slob_free_mem_syscall.c
+--- linux-5.4.86-orig/kernel/slob_free_mem_syscall.c	1970-01-01 00:00:00.000000000 +0000
++++ linux-5.4.86-dev/kernel/slob_free_mem_syscall.c	2023-04-30 22:59:52.120282469 +0000
+@@ -0,0 +1,7 @@
++#include <linux/kernel.h>
++#include <linux/syscalls.h>
++
++SYSCALL_DEFINE1(slob_free_mem, void *, p) {
++    kfree(p);
++    return 0;
++}
+\ No newline at end of file
+diff -ruN linux-5.4.86-orig/kernel/slob_get_total_alloc_mem_syscall.c linux-5.4.86-dev/kernel/slob_get_total_alloc_mem_syscall.c
+--- linux-5.4.86-orig/kernel/slob_get_total_alloc_mem_syscall.c	1970-01-01 00:00:00.000000000 +0000
++++ linux-5.4.86-dev/kernel/slob_get_total_alloc_mem_syscall.c	2023-04-30 18:12:25.179802916 +0000
+@@ -0,0 +1,7 @@
++#include <linux/kernel.h>
++#include <linux/syscalls.h>
++#include <linux/slob.h>
++
++SYSCALL_DEFINE0(slob_get_total_alloc_mem) {
++    return(returnAllocatedSpace());
++}
+\ No newline at end of file
+diff -ruN linux-5.4.86-orig/kernel/slob_get_total_free_mem_syscall.c linux-5.4.86-dev/kernel/slob_get_total_free_mem_syscall.c
+--- linux-5.4.86-orig/kernel/slob_get_total_free_mem_syscall.c	1970-01-01 00:00:00.000000000 +0000
++++ linux-5.4.86-dev/kernel/slob_get_total_free_mem_syscall.c	2023-04-30 18:12:28.991773569 +0000
+@@ -0,0 +1,7 @@
++#include <linux/kernel.h>
++#include <linux/syscalls.h>
++#include <linux/slob.h>
++
++SYSCALL_DEFINE0(slob_get_total_free_mem) {
++    return(returnFreeSpace());
++}
+\ No newline at end of file
+diff -ruN linux-5.4.86-orig/Makefile linux-5.4.86-dev/Makefile
+--- linux-5.4.86-orig/Makefile	2020-12-30 10:51:48.000000000 +0000
++++ linux-5.4.86-dev/Makefile	2023-04-26 09:05:46.891699365 +0000
+@@ -2,7 +2,7 @@
+ VERSION = 5
+ PATCHLEVEL = 4
+ SUBLEVEL = 86
+-EXTRAVERSION =
++EXTRAVERSION = -dev
+ NAME = Kleptomaniac Octopus
+ 
+ # *DOCUMENTATION*
+diff -ruN linux-5.4.86-orig/mm/slob.c linux-5.4.86-dev/mm/slob.c
+--- linux-5.4.86-orig/mm/slob.c	2020-12-30 10:51:48.000000000 +0000
++++ linux-5.4.86-dev/mm/slob.c	2023-05-02 14:56:24.986982735 +0000
+@@ -56,7 +56,6 @@
+  * the freelist will only be done so on pages residing on the same node,
+  * in order to prevent random node placement.
+  */
+-
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+ 
+@@ -74,6 +73,7 @@
+ #include <linux/atomic.h>
+ 
+ #include "slab.h"
++#include <linux/slob.h>
+ /*
+  * slob_block has a field 'units', which indicates size of block if +ve,
+  * or offset of next block if -ve (in SLOB_UNITs).
+@@ -102,6 +102,14 @@
+ static LIST_HEAD(free_slob_medium);
+ static LIST_HEAD(free_slob_large);
+ 
++#define PRINTS_DISABLE /*Enable/disable prints. PRINTS_ENABLE: enabled, PRINTS_DISABLE: disabled*/
++#define FIRST_FIT /*Enable first fit or best fit. (FIRST_FIT or BEST_FIT)*/
++#ifdef PRINTS_ENABLE
++static unsigned int callCount = 0; /*For debugging, counts number of alloc calls*/
++#endif
++static long int totalFreeSpace = 0; /*Holds total free space across all pages*/
++static long int totalAllocatedSpace = 0; /*Holds total allocated memory*/
++
+ /*
+  * slob_page_free: true for pages on free_slob_pages list.
+  */
+@@ -202,6 +210,8 @@
+ 	if (!page)
+ 		return NULL;
+ 
++	totalAllocatedSpace += sizeof(page); /*Update total allocated space counter*/
++
+ 	mod_node_page_state(page_pgdat(page), NR_SLAB_UNRECLAIMABLE,
+ 			    1 << order);
+ 	return page_address(page);
+@@ -217,6 +227,8 @@
+ 	mod_node_page_state(page_pgdat(sp), NR_SLAB_UNRECLAIMABLE,
+ 			    -(1 << order));
+ 	__free_pages(sp, order);
++
++	totalAllocatedSpace -= sizeof(b); /*Update total allocated space counter*/
+ }
+ 
+ /*
+@@ -239,11 +251,140 @@
+ {
+ 	slob_t *prev, *cur, *aligned = NULL;
+ 	int delta = 0, units = SLOB_UNITS(size);
++	slobidx_t avail;
++	#ifdef BEST_FIT
++	slob_t *next;
++	int bestBlockSpace = -1;
++	slob_t *bestBlock = NULL;
++	slob_t *prevFromBestBlock = NULL;
++	#endif
++
++	/*Best fit code starts here*/
++	#ifdef BEST_FIT
++	if(sp == NULL) {
++		return NULL;
++	}
++
++	/*Debug prints handling*/
++	#ifdef PRINTS_ENABLE
++	callCount++;
++	if(callCount == 25000) {
++		printk("slob_alloc: Request: %d\n", units);
++		printk("slob_alloc: Candidate blocks size: ");
++	}
++	#endif
++
++	/*
++	 * Run through all blocks of current page and find the best fit one (which was already found in slob_alloc,
++	 * thus why this page was chosen)
++	 */
+ 
+ 	*page_removed_from_list = false;
+ 	for (prev = NULL, cur = sp->freelist; ; prev = cur, cur = slob_next(cur)) {
+-		slobidx_t avail = slob_units(cur);
++		avail = slob_units(cur);
++
++		/*Debug prints handling*/
++		#ifdef PRINTS_ENABLE
++		if(callCount == 25000) {
++			printk(KERN_CONT "%d ", avail);
++		}
++		#endif
++		/*
++		 * 'aligned' will hold the address of the slob block so that the
++		 * address 'aligned'+'align_offset' is aligned according to the
++		 * 'align' parameter. This is for kmalloc() which prepends the
++		 * allocated block with its size, so that the block itself is
++		 * aligned when needed.
++		 */
++		if (align) {
++			aligned = (slob_t *)
++				(ALIGN((unsigned long)cur + align_offset, align) - align_offset);
++			delta = aligned - cur;
++		}
++		/*
++		 * Check if it fits, and if the free space remaining is smaller than the smallest we have so far,
++		 * update the best block. If it fits exactly, break the loop.
++		 */
++		if (avail >= units + delta) { /* room enough? */
++			if(bestBlockSpace == -1 || (avail - (units+delta)) < bestBlockSpace) {
++				bestBlock = cur;
++				prevFromBestBlock = prev;
++				bestBlockSpace = avail - (units+delta);
++
++				/*Exact fit?*/
++				if((avail - (units+delta)) == 0) {
++					break;
++				}
++			}
++		}
++
++		/*End of loop*/
++		if (slob_last(cur))
++			break;
++	}
++
++	/*Debug prints handling*/
++	#ifdef PRINTS_ENABLE
++	if(callCount == 25000) {
++		if(bestBlockSpace == -1) {
++			printk("slob_alloc: Best Fit: None\n");
++		}
++		else {
++			printk("slob_alloc: Best Fit: %d\n", slob_units(bestBlock));
++		}
++		callCount = 0;
++	}
++	#endif
++
++	if(bestBlock == NULL) {
++		return NULL;
++	}
++	
++	avail = slob_units(bestBlock);
++	if (align) {
++		aligned = (slob_t *)
++			(ALIGN((unsigned long)bestBlock + align_offset, align) - align_offset);
++		delta = aligned - bestBlock;
++	}
++
++	if (delta) { /* need to fragment head to align? */
++		next = slob_next(bestBlock);
++		set_slob(aligned, avail - delta, next);
++		set_slob(bestBlock, delta, aligned);
++		prevFromBestBlock = bestBlock;
++		bestBlock = aligned;
++		avail = slob_units(bestBlock);
++	}
++
++	next = slob_next(bestBlock);
++	if (avail == units) { /* exact fit? unlink. */
++		if (prevFromBestBlock)
++			set_slob(prevFromBestBlock, slob_units(prevFromBestBlock), next);
++		else
++			sp->freelist = next;
++	} else { /* fragment */
++		if (prevFromBestBlock)
++			set_slob(prevFromBestBlock, slob_units(prevFromBestBlock), bestBlock + units);
++		else
++			sp->freelist = bestBlock + units;
++		set_slob(bestBlock + units, avail - units, next);
++	}
++
++	sp->units -= units;
++	if (!sp->units) {
++		clear_slob_page_free(sp);
++		*page_removed_from_list = true;
++	}
+ 
++	return bestBlock;
++	#endif
++	
++	/*First fit code starts here*/
++	#ifdef FIRST_FIT
++	*page_removed_from_list = false;
++	for (prev = NULL, cur = sp->freelist; ; prev = cur, cur = slob_next(cur)) {
++		avail = slob_units(cur);
++		
+ 		/*
+ 		 * 'aligned' will hold the address of the slob block so that the
+ 		 * address 'aligned'+'align_offset' is aligned according to the
+@@ -293,6 +434,40 @@
+ 		if (slob_last(cur))
+ 			return NULL;
+ 	}
++	#endif
++}
++
++/*Functions will be called from kernel modules to return stats*/
++long int returnFreeSpace(){
++	return totalFreeSpace;
++}
++
++long int returnAllocatedSpace(){
++	return totalAllocatedSpace;
++}
++
++/*Calculates free space across all page lists.*/
++long int calcFreeSpace(void) {
++	struct list_head *slob_list;
++	struct page *sp;
++	long int spaceCount = 0;
++
++	slob_list = &free_slob_small;
++	list_for_each_entry(sp, slob_list, slab_list) {
++		spaceCount += sp->units;
++	}
++
++	slob_list = &free_slob_medium;
++	list_for_each_entry(sp, slob_list, slab_list) {
++		spaceCount += sp->units;
++	}
++
++	slob_list = &free_slob_large;
++	list_for_each_entry(sp, slob_list, slab_list) {
++		spaceCount += sp->units;
++	}
++
++	return spaceCount;
+ }
+ 
+ /*
+@@ -301,6 +476,14 @@
+ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node,
+ 							int align_offset)
+ {
++	#ifdef BEST_FIT
++	slob_t *prev, *cur, *aligned = NULL;
++	slobidx_t avail;
++	int delta = 0, units = SLOB_UNITS(size);
++	int bestBlockSpace = -1; /*Holds minimum empty space found so far (0 if exact fit)*/
++	struct page *bestPage = NULL; /*Holds best page found so far (which in turn contains the best block)*/
++	slob_t *bestBlock; /*Holds best block found so far (NOT NEEDED, DELETE)*/
++	#endif
+ 	struct page *sp;
+ 	struct list_head *slob_list;
+ 	slob_t *b = NULL;
+@@ -315,7 +498,94 @@
+ 		slob_list = &free_slob_large;
+ 
+ 	spin_lock_irqsave(&slob_lock, flags);
+-	/* Iterate through each partially free page, try to find room */
++
++	/*Best fit code starts here*/
++	#ifdef BEST_FIT
++	bool page_removed_from_list = false;
++	/*Run through all pages, indexing all blocks finding the one with the best fit for the request*/
++	list_for_each_entry(sp, slob_list, slab_list) {
++	#ifdef CONFIG_NUMA
++		/*
++		 * If there's a node specification, search for a partial
++		 * page with a matching node id in the freelist.
++		 */
++		if (node != NUMA_NO_NODE && page_to_nid(sp) != node)
++			continue;
++	#endif
++		if (sp->units < SLOB_UNITS(size))
++			continue;
++
++		/*
++		 * Choose the best block of this page (least amount of free space left if allocated), and compare
++		 * it with what we have so far
++	     */
++		for (prev = NULL, cur = sp->freelist; ; prev = cur, cur = slob_next(cur)) {
++			avail = slob_units(cur);
++
++			if (align) {
++				aligned = (slob_t *)
++					(ALIGN((unsigned long)cur + align_offset, align)
++					- align_offset);
++				delta = aligned - cur;
++			}
++
++			/*
++			* Check if it fits, and if the free space remaining is smaller than the smallest we have so far,
++			* update the best block. If it fits exactly, break the loop.
++			*/
++			if (avail >= (units + delta)) { /* room enough? */
++				if(bestBlockSpace == -1 || avail - (units+delta) < bestBlockSpace) {
++					bestBlockSpace = avail - (units+delta);
++					bestPage = sp;
++					bestBlock = cur;
++
++					/* Stop searching if an exact fit is found */
++					if ((avail - (units+delta)) == 0) {
++						break;
++					}		
++				}
++			}
++			if (slob_last(cur))
++				break;
++		}
++
++		/*Exact fit = break from loop*/
++		if(bestBlockSpace == 0) {
++			break;
++		}
++		else {
++			continue;
++		}
++	}
++
++	if(bestPage != NULL) {
++		b = slob_page_alloc(bestPage, size, align, align_offset, &page_removed_from_list);
++	}
++
++	spin_unlock_irqrestore(&slob_lock, flags);
++
++	/* Not enough space: must allocate a new page */
++	if (!b) {
++		b = slob_new_pages(gfp & ~__GFP_ZERO, 0, node);
++		if (!b)
++			return NULL;
++		sp = virt_to_page(b);
++		__SetPageSlab(sp);
++
++		spin_lock_irqsave(&slob_lock, flags);
++		sp->units = SLOB_UNITS(PAGE_SIZE);
++		sp->freelist = b;
++		INIT_LIST_HEAD(&sp->slab_list);
++		set_slob(b, SLOB_UNITS(PAGE_SIZE), b + SLOB_UNITS(PAGE_SIZE));
++		set_slob_page_free(sp, slob_list);
++		b = slob_page_alloc(sp, size, align, align_offset, &_unused);
++		BUG_ON(!b);
++		spin_unlock_irqrestore(&slob_lock, flags);
++	}
++	#endif
++
++	/*First fit code starts here*/
++	#ifdef FIRST_FIT
+ 	list_for_each_entry(sp, slob_list, slab_list) {
+ 		bool page_removed_from_list = false;
+ #ifdef CONFIG_NUMA
+@@ -329,6 +599,7 @@
+ 		/* Enough room on this page? */
+ 		if (sp->units < SLOB_UNITS(size))
+ 			continue;
++		
+ 
+ 		b = slob_page_alloc(sp, size, align, align_offset, &page_removed_from_list);
+ 		if (!b)
+@@ -351,6 +622,7 @@
+ 		}
+ 		break;
+ 	}
++
+ 	spin_unlock_irqrestore(&slob_lock, flags);
+ 
+ 	/* Not enough space: must allocate a new page */
+@@ -371,8 +643,16 @@
+ 		BUG_ON(!b);
+ 		spin_unlock_irqrestore(&slob_lock, flags);
+ 	}
++	#endif
++
+ 	if (unlikely(gfp & __GFP_ZERO))
+ 		memset(b, 0, size);
++
++	/*Calculate total free space across all pages and update counter*/
++	spin_lock_irqsave(&slob_lock, flags);
++	totalFreeSpace = calcFreeSpace();
++	spin_unlock_irqrestore(&slob_lock, flags);
++
+ 	return b;
+ }
+ 
